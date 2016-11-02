@@ -18,20 +18,8 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == system
     rm -f /lib/systemd/system/anaconda.target.wants/*;
 VOLUME [ "/sys/fs/cgroup"  ]
 
-RUN useradd -ms /bin/bash dale && passwd -d dale && usermod -aG wheel dale
+RUN useradd -ms /bin/zsh dale && passwd -d dale && usermod -aG wheel dale
 
-USER dale
-CMD /bin/zsh
-
-ENV SHELL /bin/zsh
-ENV EDITOR vim
-RUN cd ~ && git clone https://github.com/daleoooo/dale-config.git .dale-config && \
-    cd .dale-config && git checkout linux && /bin/zsh ~/.dale-config/setup.sh
-
-RUN mkdir ~/Workspace
-
-USER root
-CMD /bin/bash
 ADD ./start.sh /start.sh
 RUN mkdir /var/run/sshd
 
@@ -42,5 +30,14 @@ RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' &&\
 RUN chmod 755 /start.sh
 EXPOSE 22
 RUN ./start.sh
-ENTRYPOINT ["/usr/sbin/sshd", "-D"]
+RUN /usr/sbin/sshd
 
+USER dale
+CMD /bin/zsh
+
+ENV SHELL /bin/zsh
+ENV EDITOR vim
+RUN cd ~ && git clone https://github.com/daleoooo/dale-config.git .dale-config && \
+    cd .dale-config && git checkout linux && /bin/zsh ~/.dale-config/setup.sh
+
+RUN mkdir ~/Workspace
