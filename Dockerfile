@@ -24,6 +24,7 @@ USER dale
 CMD /bin/zsh
 
 ENV SHELL /bin/zsh
+ENV EDITOR vim
 RUN cd ~ && git clone https://github.com/daleoooo/dale-config.git .dale-config && \
     cd .dale-config && git checkout linux && /bin/zsh ~/.dale-config/setup.sh
 
@@ -33,7 +34,11 @@ USER root
 CMD /bin/bash
 ADD ./start.sh /start.sh
 RUN mkdir /var/run/sshd
-RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' 
+
+RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' &&\
+    ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N '' &&\
+    ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
+
 RUN chmod 755 /start.sh
 EXPOSE 22
 RUN ./start.sh
