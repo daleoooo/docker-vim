@@ -8,18 +8,8 @@ ENV container docker
 ENV TERM screen-256color
 
 RUN yum -y update && \
-yum -y install vim tmux zsh git-all sudo rubygems openssh-server passwd && \
+yum -y install vim tmux zsh git-all sudo rubygems openssh-server passwd wget lsof htop ack psmisc && \
 yum clean all
-
-RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service  ] || rm -f $i; done); \
-    rm -f /lib/systemd/system/multi-user.target.wants/*;\
-    rm -f /etc/systemd/system/*.wants/*;\
-    rm -f /lib/systemd/system/local-fs.target.wants/*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
-    rm -f /lib/systemd/system/basic.target.wants/*;\
-    rm -f /lib/systemd/system/anaconda.target.wants/*;
-VOLUME [ "/sys/fs/cgroup" ]
 
 RUN useradd -ms /bin/zsh ${OWNER_NAME} && usermod -aG wheel ${OWNER_NAME}
 
@@ -36,15 +26,23 @@ RUN mkdir ~/Workspace
 
 USER root
 
-ADD ./start.sh /start.sh
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64
+RUN chmod 755 /usr/local/bin/dumb-init
+
+ADD ./ssh-init.sh /ssh-init.sh
+RUN chmod 755 /ssh-init.sh
+
 RUN mkdir /var/run/sshd
 
 RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' && \
     ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N '' && \
     ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
 
-RUN chmod 755 /start.sh
-EXPOSE 22
-RUN ./start.sh
+RUN ./ssh-init.sh
 
-ENTRYPOINT ["/usr/sbin/sshd", "-D"]
+ADD ./init.sh /init.sh
+RUN chmod 755 /init.sh
+
+EXPOSE 22
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+CMD ["/init.sh"]
