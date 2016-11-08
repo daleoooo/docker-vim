@@ -1,2 +1,2 @@
-# docker-vim
-vim ide wrapped by centos docker
+# docker-workstation
+workstation wrapped by centos docker
