@@ -8,8 +8,9 @@ ENV container docker
 ENV TERM screen-256color
 
 RUN yum -y update && \
-yum -y install vim tmux zsh git-all sudo rubygems openssh-server passwd wget proctools vnstat ncdu lsof htop ack psmisc && \
-yum clean all
+    yum -y install vim tmux zsh git-all sudo rubygems openssh-server passwd wget \
+        proctools vnstat ncdu lsof htop ack psmisc redhat-lsb-core && \
+    yum clean all
 
 RUN useradd -ms /bin/zsh ${OWNER_NAME} && usermod -aG wheel ${OWNER_NAME}
 
